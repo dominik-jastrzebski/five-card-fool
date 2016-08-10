@@ -1,9 +1,11 @@
 package Game;
-use strict;
+
 use warnings FATAL => 'all';
+no warnings 'experimental::smartmatch';
 
 use FiveCardFool::Cards;
 
+use Carp qw(croak);
 use List::Util qw(shuffle);
 
 our $STARTING = 'starting';
@@ -19,6 +21,9 @@ sub new {
     $self->{'player_ids'} = $player_ids;
     $self->{'state'} = $STARTING;
     $self->{'played_cards'} = [];
+    $self->{'active_player'} = 0;
+    $self->{'attacker'} = 0;
+    $self->{'defender'} = 0;
     $self->_setup_deck();
     $self->_deal_cards();
     return $self;
@@ -56,20 +61,64 @@ sub start {
     $self->{'state'} = $ATTACK;
 }
 
+sub can_attack {
+    my $self = shift;
+    my $cards = shift;
+    if (!$self->_attacker_has_cards($cards)) {
+        return 0;
+    }
+    my ($cards_count, $first_rank_count, $second_rank_count) = $self->_cards_summary($cards);
+
+    if ($cards_count == 1) {
+        return 1;
+    } elsif ($cards_count == 3) {
+        return [$first_rank_count, $second_rank_count] ~~ [3, 0] ||
+                [$first_rank_count, $second_rank_count] ~~ [2, 1];
+    } elsif ($cards_count == 5) {
+        return [$first_rank_count, $second_rank_count] ~~ [4, 1] ||
+            [$first_rank_count, $second_rank_count] ~~ [3, 2] ||
+            [$first_rank_count, $second_rank_count] ~~ [2, 2];
+    } else {
+        return 0;
+    }
+}
+
 sub attack {
     my $self = shift;
     my $cards = shift;
     $self->{'state'} = $DEFENSE;
+    $self->_remove_cards($self->{'hands'}->[$self->{'attacker'}], $cards);
+    $self->{'played_cards'} = $cards;
     $self->next_player();
+}
+
+sub can_defend {
+    my $self = shift;
+    my $cards = shift;
+    # TODO
 }
 
 sub defend {
     my $self = shift;
     my $cards = shift;
+    Carp::croak("Expected the game to be in '$DEFENSE' state!") if ($self->{'state'} != $DEFENSE);
+    my $full_defense = 0;
+    # TODO
+    if ($full_defense) {
+
+    } else {
+
+    }
 }
 
 sub next_player {
     my $self = shift;
+    $self->{'active_player'}++;
+    $self->{'active_player'} %= $self->player_count;
+    while (scalar @{$self->{'hands'}}[$self->{'active_player'}] == 0) {
+        $self->{'active_player'}++;
+        $self->{'active_player'} %= $self->player_count;
+    }
 }
 
 sub _full_deck {
@@ -99,6 +148,49 @@ sub _deal_cards {
     for (my $i = 0; $i < scalar @$player_ids; $i++) {
         @{$self->{'hands'}->[$i]} = $self->draw( 5 );
     }
+}
+
+sub _remove_cards {
+    my $self = shift;
+    my $hand = shift;
+    my $cards = shift;
+    my @card_codes = map { $_->get_code() } @$cards;
+    @$hand = grep { !($_->get_code() ~~ @card_codes) } @$hand;
+}
+
+sub _attacker_has_cards {
+    my $self = shift;
+    my $cards = shift;
+    my @card_codes = map { $_->get_code()} @$cards;
+    my @attacker_card_codes = map { $_->get_code() } @{$self->{'hands'}->[$self->{'attacker'}]};
+    foreach my $card_code (@card_codes) {
+        unless ($card_code ~~ @attacker_card_codes) {
+            return 0;
+        }
+    }
+    return 1;
+}
+
+sub _cards_summary {
+    my $self = shift;
+    my $cards = shift;
+    my $card_count = scalar @$cards;
+    my %rank_occurences = ();
+
+    foreach my $card (@$cards) {
+        if (!$rank_occurences{$card->value()}) {
+            $rank_occurences{$card->value()} = 1;
+        } else {
+            $rank_occurences{$card->value()}++;
+        }
+    }
+
+    my @keys = sort { -$rank_occurences{$a} <=> -$rank_occurences{$b} } (keys %rank_occurences);
+    if (scalar @keys == 1) {
+        $keys[1] = 0;
+    }
+
+    return ($card_count, $rank_occurences{$keys[0]}, $rank_occurences{$keys[1]})
 }
 
 1;
