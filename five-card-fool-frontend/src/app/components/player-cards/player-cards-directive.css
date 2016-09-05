@@ -1,0 +1,4 @@
+.playable-card:hover {
+  cursor: pointer;
+  filter: sepia(100%) saturate(500%) hue-rotate(180deg);
+}

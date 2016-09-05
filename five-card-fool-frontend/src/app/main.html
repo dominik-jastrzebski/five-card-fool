@@ -1,0 +1,25 @@
+<div class="game-table" ng-controller="GameTableController">
+  <div class="players-section">
+    <div class="opponent-cards-section">
+      <div>
+        <opponent-cards card-count="gameState.opponents[0].cardCount"></opponent-cards>
+      </div>
+      <div class="played-cards-field">
+        <player-field cards="gameState.opponents[0].field"></player-field>
+      </div>
+    </div>
+    <div class="player-cards-section">
+      <div class="played-cards-field">
+        <player-field cards="gameState.player.field" playable="true" on-card-undo="undoCard(clickedCard)"></player-field>
+      </div>
+      <div>
+        <player-cards cards="gameState.player.cards" on-card-played="playCard(playedCard)"></player-cards>
+      </div>
+    </div>
+  </div>
+  <div class="deck-section">
+    <div>
+      <deck-of-cards deck="gameState.deck"></deck-of-cards>
+    </div>
+  </div>
+</div>

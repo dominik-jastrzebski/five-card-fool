@@ -1,0 +1,6 @@
+<card ng-repeat="card in cards track by $index"
+      value="{{card}}"
+      card-offset
+      card-offset-index="{{$index}}"
+      class="playable-card"
+      ng-click="onCardPlayed({playedCard: card})"></card>

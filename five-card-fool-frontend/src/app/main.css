@@ -1,0 +1,32 @@
+.game-table {
+  display: flex;
+  flex-direction: row;
+}
+
+.players-section {
+  display: flex;
+  flex-direction: column;
+  width: 40vw;
+  order: 1;
+}
+
+.deck-section {
+  order: 2;
+  display: flex;
+  align-content: center;
+}
+
+.opponent-cards-section {
+  order: 1;
+  border: 2px solid navy;
+}
+
+.player-cards-section {
+  order: 2;
+  border: 2px solid firebrick;
+}
+
+.played-cards-field {
+  margin-top: 10px;
+  margin-bottom: 10px;
+}

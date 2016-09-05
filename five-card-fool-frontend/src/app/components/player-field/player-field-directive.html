@@ -1,0 +1,4 @@
+<card ng-repeat="card in cards track by $index"
+      value="{{card}}"
+      ng-class="playable ? 'playable-card' : ''"
+      ng-click="onCardUndo({clickedCard: card})"></card>
