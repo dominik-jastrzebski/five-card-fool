@@ -1,0 +1,3 @@
+requires 'List::Util', '1.45';
+requires 'Mojolicious', '7.05';
+requires 'Test::Harness', '3.36';

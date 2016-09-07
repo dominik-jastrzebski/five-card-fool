@@ -2,6 +2,7 @@ package Game;
 
 use warnings FATAL => 'all';
 no warnings 'experimental::smartmatch';
+use strict;
 
 use FiveCardFool::Cards;
 
@@ -55,6 +56,17 @@ sub draw {
     return map { pop @{$self->{'deck'}} } 1..$count;
 }
 
+sub draw_to_five {
+    my $self = shift;
+
+    my $active_player_cards = $self->{'hands'}->[$self->{'active_player'}];
+    my $card_count = scalar @$active_player_cards;
+
+    if ($card_count < 5) {
+        push(@$active_player_cards, $self->draw(5 - $card_count));
+    }
+}
+
 sub start {
     my $self = shift;
     $self->{'active_player'} = int(abs(rand())) % $self->player_count;
@@ -89,13 +101,26 @@ sub attack {
     $self->{'state'} = $DEFENSE;
     $self->_remove_cards($self->{'hands'}->[$self->{'attacker'}], $cards);
     $self->{'played_cards'} = $cards;
+    $self->draw_to_five();
     $self->next_player();
 }
 
 sub can_defend {
     my $self = shift;
     my $cards = shift;
-    # TODO
+
+    my $played_cards_count = scalar @{$self->{'played_cards'}};
+    my $defending_cards_count = scalar @$cards;
+
+    if ($played_cards_count != $defending_cards_count) {
+        return 0;
+    }
+
+    for (my $i = 0; $ i < $played_cards_count; $i++) {
+
+    }
+
+    return 1;
 }
 
 sub defend {
